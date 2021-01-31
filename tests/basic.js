@@ -1,10 +1,15 @@
 const test = require("tape");
 const path = require("path");
+const autoprefixer = require("autoprefixer");
 const fs = require("fs-extra");
+
+const autoPrefixerPlugin = autoprefixer({
+  browsers: ["last 2 versions", "chrome >= 4"],
+});
 
 process.chdir(path.resolve(__dirname));
 
-const sassPlugin = require("../index.js");
+const postCssPlugin = require("../index.js");
 
 test("simplest case", function (t) {
   (async () => {
@@ -14,7 +19,11 @@ test("simplest case", function (t) {
       entryPoints: ["basic/index.js"],
       bundle: true,
       outfile: ".output/bundle.js",
-      plugins: [sassPlugin()],
+      plugins: [
+        postCssPlugin({
+          plugins: [autoPrefixerPlugin],
+        }),
+      ],
     });
 
     t.ok(fs.existsSync("./.output/bundle.js"), "Bundled js file should exist");
@@ -26,8 +35,8 @@ test("simplest case", function (t) {
     const fileContent = fs.readFileSync("./.output/bundle.css").toString();
 
     t.ok(
-      fileContent.indexOf(`body.isRed`) !== -1,
-      "Should contain compiled selector"
+      fileContent.indexOf(`-webkit-border-radius`) !== -1,
+      "Should contain prefixed selector"
     );
 
     t.end();

@@ -1,1 +1,1 @@
-import "./example.scss";
+import "./example.css";

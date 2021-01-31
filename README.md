@@ -1,46 +1,52 @@
-# esbuild-plugin-sass
+(Huge thanks to https://github.com/koluch/esbuild-plugin-sass which this is based off)
 
-![Node.js CI](https://github.com/koluch/esbuild-plugin-sass/workflows/Node.js%20CI/badge.svg)
+# esbuild-plugin-postcss
 
-Plugin for [esbuild](https://esbuild.github.io/) to support SASS styles
+![Node.js CI](https://github.com/koluch/esbuild-plugin-postcss/workflows/Node.js%20CI/badge.svg)
+
+Plugin for [esbuild](https://esbuild.github.io/) to support PostCSS
 
 ## Install
 
 ```bash
-npm i esbuild esbuild-plugin-sass
+npm i esbuild esbuild-plugin-postcss
 ```
 
 ## Usage example
 
-Create file `src/test.scss`:
+Create file `src/test.css`:
 
-```scss
-body {
-  &.isRed {
-    background: red;
-  }
+```css
+input[type="text"] {
+  border-radius: 1px;
 }
 ```
 
 Create file `src/index.js`:
 
 ```js
-import './test.scss'
+import "./test.css";
 ```
-
 
 Create file `build.js`:
 
 ```js
-const esbuild = require('esbuild');
-const sassPlugin = require('esbuild-plugin-sass')
+const esbuild = require("esbuild");
+const autoprefixer = require("autoprefixer");
+const postCssPlugin = require("esbuild-plugin-postcss");
 
-esbuild.build({
-    entryPoints: ['src/index.js'],
+esbuild
+  .build({
+    entryPoints: ["src/index.js"],
     bundle: true,
-    outfile: 'bundle.js',
-    plugins: [sassPlugin()],
-}).catch((e) => console.error(e.message))
+    outfile: "bundle.js",
+    plugins: [
+      postCssPlugin({
+        plugins: [autoprefixer],
+      }),
+    ],
+  })
+  .catch((e) => console.error(e.message));
 ```
 
 Run:
@@ -49,10 +55,4 @@ Run:
 node build.js
 ```
 
-File named `bundle.css` with following content will be created:
-
-```css
-body.isRed {
-  background: red;
-}
-```
+File named `bundle.css` with appropriate postcss plugins applied.
