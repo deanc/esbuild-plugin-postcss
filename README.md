@@ -2,7 +2,7 @@
 
 # esbuild-plugin-postcss
 
-![Node.js CI](https://github.com/koluch/esbuild-plugin-postcss/workflows/Node.js%20CI/badge.svg)
+![Node.js CI](https://github.com/deanc/esbuild-plugin-postcss/workflows/Node.js%20CI/badge.svg)
 
 Plugin for [esbuild](https://esbuild.github.io/) to support PostCSS
 
