@@ -22,6 +22,7 @@ test("simplest case", function (t) {
       plugins: [
         postCssPlugin({
           plugins: [autoPrefixerPlugin],
+          modules: true,
         }),
       ],
     });

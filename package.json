@@ -24,11 +24,15 @@
     "autoprefixer": "^10.2.4",
     "css-tree": "^1.1.2",
     "fs-extra": "^9.0.1",
+    "less": "^4.1.1",
     "postcss": "^8.2.4",
     "tmp": "^0.2.1"
   },
   "peerDependencies": {
-    "esbuild": "^0.8.32"
+    "esbuild": "^0.8.32",
+    "less": "^4.x",
+    "sass": "^1.x",
+    "stylus": "^0.x"
   },
   "devDependencies": {
     "esbuild": "^0.8.32",
