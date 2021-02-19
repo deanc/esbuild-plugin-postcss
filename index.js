@@ -4,7 +4,7 @@ const util = require("util");
 const tmp = require("tmp");
 const path = require("path");
 
-const sass = require("sass");
+const postcssModules = require("postcss-modules");
 const stylus = require("stylus");
 const less = require("less");
 
@@ -12,11 +12,12 @@ const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const ensureDir = util.promisify(fs.ensureDir);
 
-module.exports = (options = { plugins: [] }) => ({
+module.exports = (options = { plugins: [], modules: true }) => ({
   name: "postcss",
   setup: function (build) {
     const { rootDir = options.rootDir || process.cwd() } = options;
     const tmpDirPath = tmp.dirSync().name;
+    const modules = {};
     build.onResolve(
       { filter: /.\.(css|sass|scss|less|styl)$/, namespace: "file" },
       async (args) => {
@@ -36,6 +37,25 @@ module.exports = (options = { plugins: [] }) => ({
         const fileContent = await readFile(sourceFullPath);
         let css = sourceExt === ".css" ? fileContent : "";
 
+        // parse css modules with "postcss-modules"
+        if (options.modules !== false && sourceBaseName.match(/\.module$/)) {
+          options.plugins.unshift(
+            postcssModules({
+              ...(typeof options.modules === "object" ? options.modules : {}),
+              getJSON(filepath, json, outpath) {
+                modules[tmpFilePath] = json;
+
+                if (
+                  typeof options.modules === "object" &&
+                  typeof options.modules.getJSON === "function"
+                )
+                  return options.modules.getJSON(filepath, json, outpath);
+              },
+            })
+          );
+        }
+
+        // parse files with preprocessors
         if (sourceExt === ".sass" || sourceExt === ".scss")
           css = (await renderSass({ file: sourceFullPath })).css.toString();
         if (sourceExt === ".styl")
@@ -50,7 +70,8 @@ module.exports = (options = { plugins: [] }) => ({
             })
           ).css;
 
-        const result = postcss(options.plugins).process(css, {
+        // wait for plugins to complete parsing & get result
+        const result = await postcss(options.plugins).process(css, {
           from: sourceFullPath,
           to: tmpFilePath,
         });
@@ -60,9 +81,18 @@ module.exports = (options = { plugins: [] }) => ({
 
         return {
           path: tmpFilePath,
+          namespace: sourceBaseName.match(/\.module$/)
+            ? "postcss-modules"
+            : undefined,
         };
       }
     );
+    build.onLoad({ filter: /.*/, namespace: "postcss-modules" }, (args) => {
+      return {
+        contents: JSON.stringify(modules[args.path] ?? {}),
+        loader: "json",
+      };
+    });
   },
 });
 
