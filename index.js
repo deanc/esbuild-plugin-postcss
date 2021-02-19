@@ -68,7 +68,7 @@ module.exports = (options = { plugins: [] }) => ({
 
 function renderSass(options) {
   return new Promise((resolve, reject) => {
-    sass.render(options, (e, res) => {
+    getSassImpl().render(options, (e, res) => {
       if (e) reject(e);
       else resolve(res);
     });
@@ -82,4 +82,19 @@ function renderStylus(str, options) {
       else resolve(res);
     });
   });
+}
+
+function getSassImpl() {
+  let impl = "sass";
+  try {
+    require.resolve("sass");
+  } catch {
+    try {
+      require.resolve("node-sass");
+      impl = "node-sass";
+    } catch {
+      throw new Error('Please install "sass" or "node-sass" package');
+    }
+  }
+  return require(impl);
 }

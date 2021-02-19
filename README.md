@@ -56,3 +56,10 @@ node build.js
 ```
 
 File named `bundle.css` with appropriate postcss plugins applied.
+
+### Preprocessors
+To use preprocessors, like `sass`, `scss`, `less` or `stylus`, install it as a dev dependency:
+
+```bash
+npm i sass
+```
