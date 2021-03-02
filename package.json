@@ -2,7 +2,7 @@
   "name": "@deanc/esbuild-plugin-postcss",
   "version": "1.0.1",
   "description": "Plugin for esbuild to support postcss",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "tape 'tests/*.js' | tap-spec"
   },
@@ -21,6 +21,11 @@
     "postcss"
   ],
   "dependencies": {
+    "@types/autoprefixer": "^10.2.0",
+    "@types/css-tree": "^1.0.5",
+    "@types/fs-extra": "^9.0.8",
+    "@types/node": "^14.14.31",
+    "@types/tmp": "^0.2.0",
     "autoprefixer": "^10.2.4",
     "css-tree": "^1.1.2",
     "fs-extra": "^9.0.1",

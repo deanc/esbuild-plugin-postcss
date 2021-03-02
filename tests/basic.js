@@ -9,7 +9,10 @@ const autoPrefixerPlugin = autoprefixer({
 
 process.chdir(path.resolve(__dirname));
 
-const postCssPlugin = require("../index.js");
+const postCssPlugin = require("../dist/index.js");
+
+//if you want to exported with export default : 
+//const postCssPlugin = require("../dist/index.js").default; 
 
 test("simplest case", function (t) {
   (async () => {
