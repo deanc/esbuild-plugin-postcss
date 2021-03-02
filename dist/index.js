@@ -87,3 +87,4 @@ var postCssPlugin = function (options) {
     });
 };
 module.exports = postCssPlugin;
+//export default postCssPlugin;

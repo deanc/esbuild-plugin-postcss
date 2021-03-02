@@ -1,6 +1,6 @@
 
 import fs from 'fs-extra';
-import postcss, { AcceptedPlugin} from 'postcss';
+import postcss, { AcceptedPlugin, LazyResult} from 'postcss';
 import util from 'util';
 import tmp from 'tmp';
 import path from 'path';
@@ -22,7 +22,7 @@ const postCssPlugin= (options: Ioptions = { plugins: [] }) => ({
         const tmpDirPath = tmp.dirSync().name;
         build.onResolve(
             { filter: /.\.(css)$/, namespace: "file" },
-            async (args:esbuild.OnResolveArgs) => {
+            async (args: esbuild.OnResolveArgs): Promise<esbuild.OnResolveResult> => {
                 const sourceFullPath = path.resolve(args.resolveDir, args.path);
                 const sourceExt = path.extname(sourceFullPath);
                 const sourceBaseName = path.basename(sourceFullPath, sourceExt);
@@ -34,8 +34,8 @@ const postCssPlugin= (options: Ioptions = { plugins: [] }) => ({
                 await ensureDir(tmpDir);
 
                 const css:any= await readFile(sourceFullPath);
-
-                const result= postcss(options.plugins).process(css, {
+              
+                const result: LazyResult= postcss(options.plugins).process(css, {
                     from: sourceFullPath,
                     to: tmpFilePath,
                 });
