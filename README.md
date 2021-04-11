@@ -16,16 +16,6 @@ or yarn
 yarn add esbuid @deanc/esbuild-plugin-postcss
 ```
 
-## include file
-Es6+ syntax:
-```js
-  import postCssPlugin from '@deanc/esbuild-plugin-postcss';
-```
-nodeModules: 
-```js
-const postCssPlugin = require("@deanc/esbuild-plugin-postcss");
-```
-
 ## Usage example
 
 Create file `src/test.css`:
