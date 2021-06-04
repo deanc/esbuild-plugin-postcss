@@ -9,7 +9,11 @@ Plugin for [esbuild](https://esbuild.github.io/) to support PostCSS
 ## Install
 
 ```bash
-npm i esbuild esbuild-plugin-postcss
+npm i esbuild @deanc/esbuild-plugin-postcss
+```
+or yarn
+```bash
+yarn add esbuid @deanc/esbuild-plugin-postcss
 ```
 
 ## Usage example
@@ -33,7 +37,7 @@ Create file `build.js`:
 ```js
 const esbuild = require("esbuild");
 const autoprefixer = require("autoprefixer");
-const postCssPlugin = require("esbuild-plugin-postcss");
+const postCssPlugin = require("@deanc/esbuild-plugin-postcss");
 
 esbuild
   .build({
