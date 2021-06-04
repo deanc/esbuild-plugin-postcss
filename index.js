@@ -28,7 +28,7 @@ module.exports = (options = { plugins: [] }) => ({
 
         const css = await readFile(sourceFullPath);
 
-        const result = postcss(options.plugins).process(css, {
+        const result = await postcss(options.plugins).process(css, {
           from: sourceFullPath,
           to: tmpFilePath,
         });
