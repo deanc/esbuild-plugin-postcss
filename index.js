@@ -28,10 +28,12 @@ module.exports = (options = { plugins: [] }) => ({
 
         const css = await readFile(sourceFullPath);
 
-        const result = await postcss(options.plugins).process(css, {
+        const lazyResult = postcss(options.plugins).process(css, {
           from: sourceFullPath,
           to: tmpFilePath,
         });
+
+        const result = await lazyResult.async();
 
         // Write result file
         await writeFile(tmpFilePath, result.css);
