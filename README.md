@@ -13,7 +13,7 @@ npm i esbuild @deanc/esbuild-plugin-postcss
 ```
 or yarn
 ```bash
-yarn add esbuid @deanc/esbuild-plugin-postcss
+yarn add esbuild @deanc/esbuild-plugin-postcss
 ```
 
 ## Usage example
