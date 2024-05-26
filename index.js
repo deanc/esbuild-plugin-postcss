@@ -3,6 +3,7 @@ const postcss = require("postcss");
 const util = require("util");
 const tmp = require("tmp");
 const path = require("path");
+const { sync: resolve } = require("resolve");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -13,10 +14,19 @@ module.exports = (options = { plugins: [] }) => ({
   setup: function (build) {
     const { rootDir = options.rootDir || process.cwd() } = options;
     const tmpDirPath = tmp.dirSync().name;
+
     build.onResolve(
       { filter: /.\.(css)$/, namespace: "file" },
       async (args) => {
-        const sourceFullPath = path.resolve(args.resolveDir, args.path);
+        let sourceFullPath;
+
+        // Use Node's module resolution algorithm for modules from node_modules
+        if (args.path.startsWith('.') || path.isAbsolute(args.path)) {
+          sourceFullPath = path.resolve(args.resolveDir, args.path);
+        } else {
+          sourceFullPath = resolve(args.path, { basedir: args.resolveDir });
+        }
+
         const sourceExt = path.extname(sourceFullPath);
         const sourceBaseName = path.basename(sourceFullPath, sourceExt);
         const sourceDir = path.dirname(sourceFullPath);
@@ -27,13 +37,12 @@ module.exports = (options = { plugins: [] }) => ({
         await ensureDir(tmpDir);
 
         const css = await readFile(sourceFullPath);
-
         const result = await postcss(options.plugins).process(css, {
           from: sourceFullPath,
           to: tmpFilePath,
         });
 
-        // Write result file
+        // Write the result file
         await writeFile(tmpFilePath, result.css);
 
         return {
