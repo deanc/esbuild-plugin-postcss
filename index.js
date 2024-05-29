@@ -3,7 +3,6 @@ const postcss = require("postcss");
 const util = require("util");
 const tmp = require("tmp");
 const path = require("path");
-const { sync: resolve } = require("resolve");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -20,11 +19,28 @@ module.exports = (options = { plugins: [] }) => ({
       async (args) => {
         let sourceFullPath;
 
-        // Use Node's module resolution algorithm for modules from node_modules
+        // Manual attempt at resolving from node_modules and other typical directories
         if (args.path.startsWith('.') || path.isAbsolute(args.path)) {
           sourceFullPath = path.resolve(args.resolveDir, args.path);
         } else {
-          sourceFullPath = resolve(args.path, { basedir: args.resolveDir });
+          const modulePaths = [
+            // possible locations for node modules, maybe this is not strictly necessary
+            path.resolve(args.resolveDir, 'node_modules', args.path),
+            path.resolve(rootDir, 'node_modules', args.path),
+            path.resolve(rootDir, '../node_modules', args.path)
+          ];
+          
+          for (const modulePath of modulePaths) {
+            if (fs.existsSync(modulePath)) {
+              // if we find the path we need, use it as the sourceFullPath
+              sourceFullPath = modulePath;
+              break;
+            }
+          }
+          
+          if (!sourceFullPath) {
+            throw new Error(`Cannot resolve module: ${args.path}`);
+          }
         }
 
         const sourceExt = path.extname(sourceFullPath);
