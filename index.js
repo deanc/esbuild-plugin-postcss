@@ -13,10 +13,36 @@ module.exports = (options = { plugins: [] }) => ({
   setup: function (build) {
     const { rootDir = options.rootDir || process.cwd() } = options;
     const tmpDirPath = tmp.dirSync().name;
+
     build.onResolve(
       { filter: /.\.(css)$/, namespace: "file" },
       async (args) => {
-        const sourceFullPath = path.resolve(args.resolveDir, args.path);
+        let sourceFullPath;
+
+        // Manual attempt at resolving from node_modules and other typical directories
+        if (args.path.startsWith('.') || path.isAbsolute(args.path)) {
+          sourceFullPath = path.resolve(args.resolveDir, args.path);
+        } else {
+          const modulePaths = [
+            // possible locations for node modules, maybe this is not strictly necessary
+            path.resolve(args.resolveDir, 'node_modules', args.path),
+            path.resolve(rootDir, 'node_modules', args.path),
+            path.resolve(rootDir, '../node_modules', args.path)
+          ];
+          
+          for (const modulePath of modulePaths) {
+            if (fs.existsSync(modulePath)) {
+              // if we find the path we need, use it as the sourceFullPath
+              sourceFullPath = modulePath;
+              break;
+            }
+          }
+          
+          if (!sourceFullPath) {
+            throw new Error(`Cannot resolve module: ${args.path}`);
+          }
+        }
+
         const sourceExt = path.extname(sourceFullPath);
         const sourceBaseName = path.basename(sourceFullPath, sourceExt);
         const sourceDir = path.dirname(sourceFullPath);
@@ -27,13 +53,12 @@ module.exports = (options = { plugins: [] }) => ({
         await ensureDir(tmpDir);
 
         const css = await readFile(sourceFullPath);
-
         const result = await postcss(options.plugins).process(css, {
           from: sourceFullPath,
           to: tmpFilePath,
         });
 
-        // Write result file
+        // Write the result file
         await writeFile(tmpFilePath, result.css);
 
         return {
