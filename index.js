@@ -2,13 +2,14 @@ const fs = require("fs-extra");
 const postcss = require("postcss");
 const util = require("util");
 const tmp = require("tmp");
+const glob = require("glob");
 const path = require("path");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const ensureDir = util.promisify(fs.ensureDir);
 
-module.exports = (options = { plugins: [] }) => ({
+module.exports = (options = { plugins: [], cssPath: null }) => ({
   name: "postcss",
   setup: function (build) {
     const { rootDir = options.rootDir || process.cwd() } = options;
@@ -60,9 +61,14 @@ module.exports = (options = { plugins: [] }) => ({
 
         // Write the result file
         await writeFile(tmpFilePath, result.css);
+        let watchFiles = [];
+        if (options.cssPath !== null) {
+          watchFiles = await glob.sync(`${options.cssPath}**/*.css`);
+        }
 
         return {
           path: tmpFilePath,
+          watchFiles,
         };
       }
     );
