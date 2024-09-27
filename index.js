@@ -45,8 +45,11 @@ module.exports = (options = { plugins: [] }) => ({
         // Write the result file
         await writeFile(tmpFilePath, result.css);
 
+        // https://esbuild.github.io/plugins/#on-resolve-results
         return {
           path: tmpFilePath,
+          // watch for changes to the original input for automatic rebuilds
+          watchFiles: [ sourceFullPath ],
         };
       }
     );
