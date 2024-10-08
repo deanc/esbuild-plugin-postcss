@@ -13,36 +13,20 @@ module.exports = (options = { plugins: [] }) => ({
   setup: function (build) {
     const { rootDir = options.rootDir || process.cwd() } = options;
     const tmpDirPath = tmp.dirSync().name;
-
     build.onResolve(
       { filter: /.\.(css)$/, namespace: "file" },
       async (args) => {
-        let sourceFullPath;
-
-        // Manual attempt at resolving from node_modules and other typical directories
-        if (args.path.startsWith('.') || path.isAbsolute(args.path)) {
-          sourceFullPath = path.resolve(args.resolveDir, args.path);
-        } else {
-          const modulePaths = [
-            // possible locations for node modules, maybe this is not strictly necessary
-            path.resolve(args.resolveDir, 'node_modules', args.path),
-            path.resolve(rootDir, 'node_modules', args.path),
-            path.resolve(rootDir, '../node_modules', args.path)
-          ];
-          
-          for (const modulePath of modulePaths) {
-            if (fs.existsSync(modulePath)) {
-              // if we find the path we need, use it as the sourceFullPath
-              sourceFullPath = modulePath;
-              break;
-            }
-          }
-          
-          if (!sourceFullPath) {
-            throw new Error(`Cannot resolve module: ${args.path}`);
-          }
+        // use esbuild path resolution for node_modules, typescript paths, etc.
+        // https://esbuild.github.io/plugins/#resolve
+        const resolution = await build.resolve(args.path, {
+          resolveDir: args.resolveDir,
+          kind: args.kind,
+        });
+        if (resolution.errors.length > 0) {
+          return { errors: result.errors }
         }
 
+        const sourceFullPath = resolution.path;
         const sourceExt = path.extname(sourceFullPath);
         const sourceBaseName = path.basename(sourceFullPath, sourceExt);
         const sourceDir = path.dirname(sourceFullPath);
@@ -61,8 +45,11 @@ module.exports = (options = { plugins: [] }) => ({
         // Write the result file
         await writeFile(tmpFilePath, result.css);
 
+        // https://esbuild.github.io/plugins/#on-resolve-results
         return {
           path: tmpFilePath,
+          // watch for changes to the original input for automatic rebuilds
+          watchFiles: [ sourceFullPath ],
         };
       }
     );
