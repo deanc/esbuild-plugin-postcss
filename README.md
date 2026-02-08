@@ -67,7 +67,7 @@ File named `bundle.css` with appropriate postcss plugins applied.
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 22+
 
 ## Contributing
 
