@@ -1,6 +1,6 @@
 {
   "name": "@deanc/esbuild-plugin-postcss",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Plugin for esbuild to support postcss",
   "type": "module",
   "main": "./dist/index.js",
