@@ -39,9 +39,9 @@ import "./test.css";
 Create file `build.js`:
 
 ```js
-const esbuild = require("esbuild");
-const autoprefixer = require("autoprefixer");
-const postCssPlugin = require("@deanc/esbuild-plugin-postcss");
+import esbuild from "esbuild";
+import autoprefixer from "autoprefixer";
+import postCssPlugin from "@deanc/esbuild-plugin-postcss";
 
 esbuild
   .build({

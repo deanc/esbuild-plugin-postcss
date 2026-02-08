@@ -1,21 +1,22 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const path = require("node:path");
-const autoprefixer = require("autoprefixer");
-const fs = require("node:fs");
+import test from "node:test";
+import assert from "node:assert/strict";
+import path from "node:path";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import autoprefixer from "autoprefixer";
+import esbuild from "esbuild";
+import postCssPlugin from "../dist/index.js";
 
 const autoPrefixerPlugin = autoprefixer({
   overrideBrowserslist: ["last 2 versions", "chrome >= 4"],
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 process.chdir(path.resolve(__dirname));
-
-const postCssPlugin = require("../index.js");
 
 test("simplest case", async () => {
   fs.rmSync(".output", { recursive: true, force: true });
-
-  const esbuild = require("esbuild");
 
   await esbuild.build({
     entryPoints: ["basic/index.js"],
