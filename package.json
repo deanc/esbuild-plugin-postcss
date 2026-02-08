@@ -19,7 +19,10 @@
   ],
   "scripts": {
     "build": "pnpm exec tsc -p tsconfig.json",
-    "test": "pnpm build && node --test tests/*.js"
+    "clean": "rimraf dist .output",
+    "lint": "eslint .",
+    "test": "pnpm build && node --test tests/*.js",
+    "prepublishOnly": "pnpm build"
   },
   "author": {
     "name": "Dean Clatworthy",
@@ -36,16 +39,20 @@
     "postcss"
   ],
   "dependencies": {
-    "autoprefixer": "^10.4.22",
+    "autoprefixer": "^10.4.24",
     "postcss": "^8.5.6"
   },
   "peerDependencies": {
     "esbuild": "^0.27.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.0",
-    "esbuild": "^0.27.0",
-    "typescript": "^5.7.3"
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^25.2.2",
+    "esbuild": "^0.27.3",
+    "eslint": "^9.0.0",
+    "rimraf": "^6.0.1",
+    "typescript-eslint": "^8.20.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=22"
