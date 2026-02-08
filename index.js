@@ -1,57 +1,55 @@
-const fs = require("fs-extra");
+const fs = require("node:fs/promises");
 const postcss = require("postcss");
-const util = require("util");
-const tmp = require("tmp");
-const path = require("path");
+const path = require("node:path");
 
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
-const ensureDir = util.promisify(fs.ensureDir);
+module.exports = (options = {}) => {
+  const plugins = options.plugins ?? [];
 
-module.exports = (options = { plugins: [] }) => ({
-  name: "postcss",
-  setup: function (build) {
-    const { rootDir = options.rootDir || process.cwd() } = options;
-    const tmpDirPath = tmp.dirSync().name;
-    build.onResolve(
-      { filter: /.\.(css)$/, namespace: "file" },
-      async (args) => {
-        // use esbuild path resolution for node_modules, typescript paths, etc.
+  return {
+    name: "postcss",
+    setup(build) {
+      build.onResolve({ filter: /\.css$/, namespace: "file" }, async (args) => {
+        // Use esbuild path resolution for node_modules, tsconfig paths, etc.
         // https://esbuild.github.io/plugins/#resolve
         const resolution = await build.resolve(args.path, {
           resolveDir: args.resolveDir,
           kind: args.kind,
         });
+
         if (resolution.errors.length > 0) {
-          return { errors: result.errors }
+          return { errors: resolution.errors };
         }
 
-        const sourceFullPath = resolution.path;
-        const sourceExt = path.extname(sourceFullPath);
-        const sourceBaseName = path.basename(sourceFullPath, sourceExt);
-        const sourceDir = path.dirname(sourceFullPath);
-        const sourceRelDir = path.relative(path.dirname(rootDir), sourceDir);
+        return {
+          path: resolution.path,
+          namespace: "postcss",
+        };
+      });
 
-        const tmpDir = path.resolve(tmpDirPath, sourceRelDir);
-        const tmpFilePath = path.resolve(tmpDir, `${sourceBaseName}.css`);
-        await ensureDir(tmpDir);
+      build.onLoad({ filter: /\.css$/, namespace: "postcss" }, async (args) => {
+        const sourceFullPath = args.path;
+        const css = await fs.readFile(sourceFullPath, "utf8");
 
-        const css = await readFile(sourceFullPath);
-        const result = await postcss(options.plugins).process(css, {
+        if (plugins.length === 0) {
+          return {
+            contents: css,
+            loader: "css",
+            resolveDir: path.dirname(sourceFullPath),
+            watchFiles: [sourceFullPath],
+          };
+        }
+
+        const result = await postcss(plugins).process(css, {
           from: sourceFullPath,
-          to: tmpFilePath,
         });
 
-        // Write the result file
-        await writeFile(tmpFilePath, result.css);
-
-        // https://esbuild.github.io/plugins/#on-resolve-results
         return {
-          path: tmpFilePath,
-          // watch for changes to the original input for automatic rebuilds
-          watchFiles: [ sourceFullPath ],
+          contents: result.css,
+          loader: "css",
+          resolveDir: path.dirname(sourceFullPath),
+          watchFiles: [sourceFullPath],
         };
-      }
-    );
-  },
-});
+      });
+    },
+  };
+};
