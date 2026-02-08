@@ -18,7 +18,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "pnpm exec tsc -p tsconfig.json",
     "test": "pnpm build && node --test tests/*.js"
   },
   "author": {
@@ -43,6 +43,7 @@
     "esbuild": "^0.27.0"
   },
   "devDependencies": {
+    "@types/node": "^22.13.0",
     "esbuild": "^0.27.0",
     "typescript": "^5.7.3"
   },

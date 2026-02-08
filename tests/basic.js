@@ -16,12 +16,14 @@ const __dirname = path.dirname(__filename);
 process.chdir(path.resolve(__dirname));
 
 test("simplest case", async () => {
-  fs.rmSync(".output", { recursive: true, force: true });
+  const outputDir = path.join(__dirname, ".output");
+  fs.rmSync(outputDir, { recursive: true, force: true });
+  fs.mkdirSync(outputDir, { recursive: true });
 
   await esbuild.build({
-    entryPoints: ["basic/index.js"],
+    entryPoints: [path.join(__dirname, "basic/index.js")],
     bundle: true,
-    outfile: ".output/bundle.js",
+    outfile: path.join(outputDir, "bundle.js"),
     plugins: [
       postCssPlugin({
         plugins: [autoPrefixerPlugin],
@@ -30,10 +32,12 @@ test("simplest case", async () => {
   });
   esbuild.stop();
 
-  assert.ok(fs.existsSync("./.output/bundle.js"));
-  assert.ok(fs.existsSync("./.output/bundle.css"));
+  assert.ok(fs.existsSync(path.join(outputDir, "bundle.js")));
+  assert.ok(fs.existsSync(path.join(outputDir, "bundle.css")));
 
-  const fileContent = fs.readFileSync("./.output/bundle.css").toString();
+  const fileContent = fs
+    .readFileSync(path.join(outputDir, "bundle.css"))
+    .toString();
 
   assert.ok(fileContent.includes("-webkit-border-radius"));
   assert.ok(fileContent.includes("display: flex"));
