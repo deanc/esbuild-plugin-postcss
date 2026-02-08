@@ -122,6 +122,14 @@ jobs:
           version: ${{ env.NEW_VERSION }}
           operation: release
 
+      - name: Ensure tag does not already exist
+        run: |
+          git fetch --tags origin
+          if git rev-parse "refs/tags/${{ env.NEW_VERSION }}" >/dev/null 2>&1; then
+            echo "Tag ${{ env.NEW_VERSION }} already exists on origin."
+            exit 1
+          fi
+
       # Commit changes
       - name: Sync lockfile after version bump
         run: pnpm install --lockfile-only
