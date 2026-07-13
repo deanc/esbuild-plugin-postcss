@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ensure latest CI on default branch succeeded
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: repo } = await github.rest.repos.get({
@@ -53,16 +53,16 @@ jobs:
     steps:
       # Checkout project repository
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       # Setup Node.js environment
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           registry-url: https://registry.npmjs.org/
           node-version: "22"
@@ -72,7 +72,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-22-${{ hashFiles('pnpm-lock.yaml') }}
@@ -116,11 +116,7 @@ jobs:
 
       # Update changelog unreleased section with new version
       - name: Update changelog
-        uses: superfaceai/release-changelog-action@v1
-        with:
-          path-to-changelog: CHANGELOG.md
-          version: ${{ env.NEW_VERSION }}
-          operation: release
+        run: node scripts/release-changelog.mjs release "$NEW_VERSION"
 
       - name: Ensure tag does not already exist
         run: |
@@ -156,15 +152,11 @@ jobs:
       # Read version changelog
       - id: get-changelog
         name: Get version changelog
-        uses: superfaceai/release-changelog-action@v1
-        with:
-          path-to-changelog: CHANGELOG.md
-          version: ${{ env.NEW_VERSION }}
-          operation: read
+        run: node scripts/release-changelog.mjs read "$NEW_VERSION"
 
       # Update GitHub release with changelog
       - name: Update GitHub release documentation
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.NEW_VERSION }}
           body: ${{ steps.get-changelog.outputs.changelog }}
