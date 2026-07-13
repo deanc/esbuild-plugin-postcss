@@ -42,3 +42,28 @@ test("simplest case", async () => {
   assert.ok(fileContent.includes("-webkit-border-radius"));
   assert.ok(fileContent.includes("display: flex"));
 });
+
+test("processes CSS resolved through tsconfig paths", async () => {
+  const outputDir = path.join(__dirname, ".output");
+  const result = await esbuild.build({
+    stdin: {
+      contents: 'import "example.css";',
+      resolveDir: __dirname,
+      loader: "js",
+    },
+    bundle: true,
+    outfile: path.join(outputDir, "alias.js"),
+    write: false,
+    tsconfigRaw: {
+      compilerOptions: {
+        baseUrl: __dirname,
+        paths: { "example.css": ["./basic/example.css"] },
+      },
+    },
+    plugins: [postCssPlugin({ plugins: [autoPrefixerPlugin] })],
+  });
+  esbuild.stop();
+
+  const css = result.outputFiles.find((file) => file.path.endsWith(".css"));
+  assert.ok(css?.text.includes("-webkit-border-radius"));
+});
