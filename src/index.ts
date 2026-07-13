@@ -15,26 +15,8 @@ export default function postCssPlugin(
   return {
     name: "postcss",
     setup(build) {
-      build.onResolve({ filter: /\.css$/, namespace: "file" }, async (args) => {
-        // Use esbuild path resolution for node_modules, tsconfig paths, etc.
-        // https://esbuild.github.io/plugins/#resolve
-        const resolution = await build.resolve(args.path, {
-          resolveDir: args.resolveDir,
-          kind: args.kind,
-        });
-
-        if (resolution.errors.length > 0) {
-          return { errors: resolution.errors };
-        }
-
-        return {
-          path: resolution.path,
-          namespace: "postcss",
-        };
-      });
-
       build.onLoad(
-        { filter: /\.css$/, namespace: "postcss" },
+        { filter: /\.css$/, namespace: "file" },
         async (args) => {
           const sourceFullPath = args.path;
           const css = await fs.readFile(sourceFullPath, "utf8");
